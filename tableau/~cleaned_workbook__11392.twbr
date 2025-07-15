@@ -2348,6 +2348,12 @@
         </relationships>
       </object-graph>
     </datasource>
+    <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+      <aliases enabled='yes' />
+      <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
+        <calculation class='tableau' formula='95.' />
+      </column>
+    </datasource>
     <datasource caption='master_olist_dataset_with_features' inline='true' name='federated.1l2esje0nn8iim16vonew1grfysj' version='18.1'>
       <connection class='federated'>
         <named-connections>
@@ -3224,11 +3230,23 @@
             <collation flag='0' name='LEN_RGB' />
             <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
           </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>order_late_flag</remote-name>
+            <remote-type>11</remote-type>
+            <local-name>[order_late_flag]</local-name>
+            <parent-name>[master_olist_dataset_with_features.csv]</parent-name>
+            <remote-alias>order_late_flag</remote-alias>
+            <ordinal>56</ordinal>
+            <local-type>boolean</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
+          </metadata-record>
         </metadata-records>
       </connection>
       <aliases enabled='yes' />
       <column caption='OTDR' datatype='real' default-format='p0.00%' name='[Calculation_801640765279150080]' role='measure' type='quantitative'>
-        <calculation class='tableau' formula='1 - SUM(INT([is_late])) / COUNT([order_id])' />
+        <calculation class='tableau' formula='1 - SUM(INT([Calculation_801640765297446920])) / COUNTD([order_id])' />
       </column>
       <column caption='Δ OTDR vs Target' datatype='real' name='[Calculation_801640765279617025]' role='measure' type='quantitative'>
         <calculation class='tableau' formula='[Calculation_801640765279150080] - [Parameters].[Parameter 1]' />
@@ -3237,21 +3255,32 @@
         <calculation class='tableau' formula='IF [Calculation_801640765279150080] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
       </column>
       <column caption='Latest Year' datatype='integer' name='[Calculation_801640765285101572]' role='measure' type='quantitative'>
-        <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_purchase_timestamp]) ) }' />
+        <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_delivered_customer_date]) ) }' />
       </column>
       <column caption='OTDR Latest Year' datatype='real' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
-        <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_purchase_timestamp]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([is_late])         // make sure late_flag is 0/1&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_purchase_timestamp]) = [Calculation_801640765285101572]&#13;&#10;         THEN 1&#13;&#10;         END )&#13;&#10;)' />
+        <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([Calculation_801640765297446920])&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   COUNTD( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN [order_id]&#13;&#10;         END )&#13;&#10;)' />
+      </column>
+      <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
+      </column>
+      <column caption='OTDR Order-Level' datatype='real' default-format='p0.00%' name='[OTDR (copy)_801640765297299463]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='1 - SUM(INT([is_late])) / COUNT([order_id])' />
+      </column>
+      <column caption='OTDR Status Latest Year' datatype='string' name='[OTDR Status (copy)_801640765291048966]' role='measure' type='nominal'>
+        <calculation class='tableau' formula='IF [Calculation_801640765285408773] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
       </column>
       <column caption='master_olist_dataset_with_features.csv' datatype='table' name='[__tableau_internal_object_id__].[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]' role='measure' type='quantitative' />
       <column datatype='string' name='[customer_city]' role='dimension' semantic-role='[City].[Name]' type='nominal' />
       <column datatype='string' name='[customer_state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
       <column aggregation='Sum' datatype='integer' default-format='*00000' name='[customer_zip_code_prefix]' role='dimension' semantic-role='[ZipCode].[Name]' type='ordinal' />
+      <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
       <column datatype='string' name='[seller_city]' role='dimension' semantic-role='[City].[Name]' type='nominal' />
       <column datatype='string' name='[seller_state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
       <column datatype='string' name='[seller_zip_code_prefix]' role='dimension' semantic-role='[ZipCode].[Name]' type='nominal' />
       <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
+      <column-instance column='[OTDR Status (copy)_801640765291048966]' derivation='User' name='[usr:OTDR Status (copy)_801640765291048966:nk]' pivot='key' type='nominal' />
       <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='true' object-id='' units='records'>
-        <connection access_mode='readonly' author-locale='en_US' class='hyper' dbname='C:/Users/User/AppData/Local/Temp/TableauTemp/#TableauTemp_1wemyxz00b4rgc1btln3p1c5rt95.hyper' default-settings='hyper' schema='Extract' sslmode='' tablename='Extract' update-time='07/14/2025 04:16:49 PM' username='tableau_internal_user'>
+        <connection access_mode='readonly' authentication='auth-none' author-locale='en_US' class='hyper' dbname='C:/Users/User/AppData/Local/Temp/TableauTemp/#TableauTemp_1wemyxz00b4rgc1btln3p1c5rt95.hyper' default-settings='yes' schema='Extract' sslmode='' update-time='' username='tableau_internal_user'>
           <relation name='Extract' table='[Extract].[Extract]' type='table' />
           <metadata-records>
             <metadata-record class='column'>
@@ -3264,7 +3293,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3279,7 +3308,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3309,7 +3338,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3323,7 +3352,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3337,7 +3366,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>72694</approx-count>
+              <approx-count>84814</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3351,7 +3380,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3365,7 +3394,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>date</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>1101</approx-count>
+              <approx-count>1177</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3379,7 +3408,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>78754</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3394,7 +3423,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>integer</local-type>
               <aggregation>Sum</aggregation>
-              <approx-count>21919</approx-count>
+              <approx-count>20459</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3408,7 +3437,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>3725</approx-count>
+              <approx-count>3343</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3423,7 +3452,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>57</approx-count>
+              <approx-count>42</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3438,7 +3467,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>16</approx-count>
+              <approx-count>6</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3453,7 +3482,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>19415</approx-count>
+              <approx-count>19559</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3468,7 +3497,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>3657</approx-count>
+              <approx-count>4160</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3483,7 +3512,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>84814</approx-count>
+              <approx-count>90872</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3497,7 +3526,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>3586</approx-count>
+              <approx-count>4038</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3512,7 +3541,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>6903</approx-count>
+              <approx-count>7189</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3527,7 +3556,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>106</approx-count>
+              <approx-count>149</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3557,7 +3586,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>5599</approx-count>
+              <approx-count>5169</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3587,7 +3616,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>2288</approx-count>
+              <approx-count>1914</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3602,7 +3631,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>172</approx-count>
+              <approx-count>247</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3617,7 +3646,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>193</approx-count>
+              <approx-count>184</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3632,7 +3661,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>195</approx-count>
+              <approx-count>139</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3647,7 +3676,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>2977</approx-count>
+              <approx-count>3362</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3662,7 +3691,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>881</approx-count>
+              <approx-count>1046</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3677,7 +3706,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>29</approx-count>
+              <approx-count>22</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3692,7 +3721,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>39</approx-count>
+              <approx-count>16</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3722,7 +3751,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>19</approx-count>
+              <approx-count>18</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3737,7 +3766,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>23121</approx-count>
+              <approx-count>23319</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3752,7 +3781,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>78366</approx-count>
+              <approx-count>84218</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3782,7 +3811,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>3120</approx-count>
+              <approx-count>1995</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3797,7 +3826,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>21366</approx-count>
+              <approx-count>22086</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3812,7 +3841,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>2780</approx-count>
+              <approx-count>2947</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3827,7 +3856,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>datetime</local-type>
               <aggregation>Year</aggregation>
-              <approx-count>78366</approx-count>
+              <approx-count>84218</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3855,7 +3884,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>106</approx-count>
+              <approx-count>149</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -3884,7 +3913,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>integer</local-type>
               <aggregation>Sum</aggregation>
-              <approx-count>275</approx-count>
+              <approx-count>197</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3898,7 +3927,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>integer</local-type>
               <aggregation>Sum</aggregation>
-              <approx-count>112</approx-count>
+              <approx-count>97</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3926,7 +3955,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>integer</local-type>
               <aggregation>Sum</aggregation>
-              <approx-count>86</approx-count>
+              <approx-count>61</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3940,7 +3969,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>integer</local-type>
               <aggregation>Sum</aggregation>
-              <approx-count>99</approx-count>
+              <approx-count>126</approx-count>
               <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
@@ -3969,7 +3998,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>28</approx-count>
+              <approx-count>38</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -4012,7 +4041,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>21747</approx-count>
+              <approx-count>20286</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -4027,7 +4056,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>21747</approx-count>
+              <approx-count>20286</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -4042,7 +4071,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>2966</approx-count>
+              <approx-count>3348</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -4057,7 +4086,7 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>2966</approx-count>
+              <approx-count>3348</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
@@ -4072,9 +4101,23 @@
               <family>master_olist_dataset_with_features.csv</family>
               <local-type>string</local-type>
               <aggregation>Count</aggregation>
-              <approx-count>84591</approx-count>
+              <approx-count>84517</approx-count>
               <contains-null>true</contains-null>
               <collation flag='0' name='LEN_RGB' />
+              <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>order_late_flag</remote-name>
+              <remote-type>11</remote-type>
+              <local-name>[order_late_flag]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>order_late_flag</remote-alias>
+              <ordinal>56</ordinal>
+              <family>master_olist_dataset_with_features.csv</family>
+              <local-type>boolean</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>2</approx-count>
+              <contains-null>true</contains-null>
               <object-id>[master_olist_dataset_with_features.csv_D430F48B271C4315BE73EE83DB0E5D3A]</object-id>
             </metadata-record>
           </metadata-records>
@@ -4084,6 +4127,11 @@
       <style>
         <style-rule element='mark'>
           <encoding attr='color' field='[usr:Calculation_801640765283844099:nk]' type='palette'>
+            <map to='#e15759'>
+              <bucket>&quot;Below&quot;</bucket>
+            </map>
+          </encoding>
+          <encoding attr='color' field='[usr:OTDR Status (copy)_801640765291048966:nk]' type='palette'>
             <map to='#e15759'>
               <bucket>&quot;Below&quot;</bucket>
             </map>
@@ -4124,6 +4172,7 @@
         <field-sort-custom-order field='seller_city' />
         <field-sort-custom-order field='seller_state' />
         <field-sort-custom-order field='Calculation_801640765283844099' />
+        <field-sort-custom-order field='OTDR Status (copy)_801640765291048966' />
         <field-sort-custom-order field='payment_sequential' />
         <field-sort-custom-order field='payment_type' />
         <field-sort-custom-order field='payment_installments' />
@@ -4157,6 +4206,8 @@
         <field-sort-custom-order field='Latitude (generated)' />
         <field-sort-custom-order field='Longitude (generated)' />
         <field-sort-custom-order field='Calculation_801640765279150080' />
+        <field-sort-custom-order field='OTDR (copy)_801640765297299463' />
+        <field-sort-custom-order field='Calculation_801640765297446920' />
         <field-sort-custom-order field=':Measure Names' />
         <field-sort-custom-order field='Multiple Values' />
       </field-sort-info>
@@ -4237,12 +4288,6 @@
         </objects>
       </object-graph>
     </datasource>
-    <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
-      <aliases enabled='yes' />
-      <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
-        <calculation class='tableau' formula='95.' />
-      </column>
-    </datasource>
   </datasources>
   <worksheets>
     <worksheet name='2018 OTD Rate'>
@@ -4258,23 +4303,23 @@
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
-            <column caption='OTDR' datatype='real' default-format='p0.00%' name='[Calculation_801640765279150080]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='1 - SUM(INT([is_late])) / COUNT([order_id])' />
-            </column>
-            <column caption='OTDR Status' datatype='string' name='[Calculation_801640765283844099]' role='measure' type='nominal'>
-              <calculation class='tableau' formula='IF [Calculation_801640765279150080] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
-            </column>
             <column caption='Latest Year' datatype='integer' name='[Calculation_801640765285101572]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_purchase_timestamp]) ) }' />
+              <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_delivered_customer_date]) ) }' />
             </column>
             <column caption='OTDR Latest Year' datatype='real' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_purchase_timestamp]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([is_late])         // make sure late_flag is 0/1&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_purchase_timestamp]) = [Calculation_801640765285101572]&#13;&#10;         THEN 1&#13;&#10;         END )&#13;&#10;)' />
+              <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([Calculation_801640765297446920])&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   COUNTD( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN [order_id]&#13;&#10;         END )&#13;&#10;)' />
             </column>
-            <column datatype='boolean' name='[is_late]' role='dimension' type='nominal' />
+            <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
+            </column>
+            <column caption='OTDR Status Latest Year' datatype='string' name='[OTDR Status (copy)_801640765291048966]' role='measure' type='nominal'>
+              <calculation class='tableau' formula='IF [Calculation_801640765285408773] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
+            </column>
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='datetime' name='[order_delivered_customer_date]' role='dimension' type='ordinal' />
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
-            <column datatype='datetime' name='[order_purchase_timestamp]' role='dimension' type='ordinal' />
-            <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_801640765285408773]' derivation='User' name='[usr:Calculation_801640765285408773:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[OTDR Status (copy)_801640765291048966]' derivation='User' name='[usr:OTDR Status (copy)_801640765291048966:nk]' pivot='key' type='nominal' />
           </datasource-dependencies>
           <aggregation value='true' />
         </view>
@@ -4286,7 +4331,7 @@
             </view>
             <mark class='Text' />
             <encodings>
-              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765283844099:nk]' />
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:OTDR Status (copy)_801640765291048966:nk]' />
               <text column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765285408773:qk]' />
             </encodings>
             <customized-label>
@@ -4326,12 +4371,15 @@
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column caption='OTDR' datatype='real' default-format='p0.00%' name='[Calculation_801640765279150080]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='1 - SUM(INT([is_late])) / COUNT([order_id])' />
+              <calculation class='tableau' formula='1 - SUM(INT([Calculation_801640765297446920])) / COUNTD([order_id])' />
             </column>
             <column caption='OTDR Status' datatype='string' name='[Calculation_801640765283844099]' role='measure' type='nominal'>
               <calculation class='tableau' formula='IF [Calculation_801640765279150080] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
             </column>
-            <column datatype='boolean' name='[is_late]' role='dimension' type='nominal' />
+            <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
+            </column>
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
             <column-instance column='[Calculation_801640765279150080]' derivation='User' name='[usr:Calculation_801640765279150080:qk]' pivot='key' type='quantitative' />
             <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
@@ -4380,8 +4428,8 @@
           </datasources>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_bucket]' derivation='Count' name='[cnt:review_bucket:qk]' pivot='key' type='quantitative' />
-            <column datatype='boolean' name='[is_late]' role='dimension' type='nominal' />
-            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='nominal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='ordinal' />
             <column-instance column='[review_bucket]' derivation='None' name='[none:review_bucket:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[review_bucket]' role='dimension' type='nominal' />
           </datasource-dependencies>
@@ -4412,8 +4460,8 @@
           </datasources>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_score]' derivation='Count' name='[cnt:review_score:qk]' pivot='key' type='quantitative' />
-            <column datatype='boolean' name='[is_late]' role='dimension' type='nominal' />
-            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='nominal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='ordinal' />
             <column-instance column='[review_score]' derivation='None' name='[none:review_score:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[review_score]' role='dimension' type='nominal' />
           </datasource-dependencies>
@@ -4446,7 +4494,7 @@
       <simple-id uuid='{82990495-FC69-4FA9-9302-94F707FB0C67}' />
     </worksheet>
   </worksheets>
-  <windows saved-dpi-scale-factor='1.5' source-height='69'>
+  <windows saved-dpi-scale-factor='1.5' source-height='75'>
     <window class='worksheet' name='Review Score by Late'>
       <cards>
         <edge name='left'>
@@ -4553,7 +4601,7 @@
         </edge>
         <edge name='right'>
           <strip size='160'>
-            <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765283844099:nk]' type='color' />
+            <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:OTDR Status (copy)_801640765291048966:nk]' type='color' />
           </strip>
         </edge>
       </cards>
