@@ -4,6 +4,8 @@
 <workbook original-version='18.1' source-build='2025.1.2 (20251.25.0520.1026)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
   <document-format-change-manifest>
     <AnimationOnByDefault />
+    <IntuitiveSorting />
+    <IntuitiveSorting_SP2 />
     <MarkAnimation />
     <ObjectModelEncapsulateLegacy />
     <ObjectModelExtractV2 />
@@ -2350,8 +2352,13 @@
     </datasource>
     <datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
       <aliases enabled='yes' />
-      <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
-        <calculation class='tableau' formula='95.' />
+      <column caption='Target OTDR' datatype='real' default-format='p0%' name='[Parameter 1]' param-domain-type='range' role='measure' type='quantitative' value='0.94999999999999996'>
+        <calculation class='tableau' formula='0.94999999999999996' />
+        <range granularity='0.01' max='1.0' min='0.95' />
+      </column>
+      <column caption='Top N Sellers Late Rate' datatype='integer' name='[Target OTDR (copy)]' param-domain-type='range' role='measure' type='quantitative' value='10'>
+        <calculation class='tableau' formula='10' />
+        <range granularity='1' max='50' min='1' />
       </column>
     </datasource>
     <datasource caption='master_olist_dataset_with_features' inline='true' name='federated.1l2esje0nn8iim16vonew1grfysj' version='18.1'>
@@ -3257,11 +3264,31 @@
       <column caption='Latest Year' datatype='integer' name='[Calculation_801640765285101572]' role='measure' type='quantitative'>
         <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_delivered_customer_date]) ) }' />
       </column>
-      <column caption='OTDR Latest Year' datatype='real' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
-        <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([Calculation_801640765297446920])&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   COUNTD( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN [order_id]&#13;&#10;         END )&#13;&#10;)' />
+      <column caption='OTDR Latest Year' datatype='real' default-format='p0.00%' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='1 -&#13;&#10;(&#13;&#10;    SUM(&#13;&#10;        IF [Calculation_801640765299736586] = 2018 THEN [Calculation_801640765297446920] END&#13;&#10;    )&#13;&#10;    /&#13;&#10;    SUM(&#13;&#10;        IF [Calculation_801640765299736586] = 2018 THEN 1 END&#13;&#10;    )&#13;&#10;)' />
       </column>
       <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
         <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
+      </column>
+      <column caption='Order Delivered Year' datatype='integer' name='[Calculation_801640765299736586]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='{ FIXED [order_id] : MAX(DATEPART(&apos;year&apos;, [order_delivered_customer_date])) }' />
+      </column>
+      <column caption='Gap to Target OTDR' datatype='real' default-format='p0.00%' name='[Calculation_801640765301399563]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='([Parameters].[Parameter 1] - [Calculation_801640765285408773])' />
+      </column>
+      <column caption='Seller Is Late Order-level' datatype='integer' name='[Calculation_801640765304225804]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='{ FIXED [seller_id], [order_id] : MAX( INT([is_late_dispatch]) ) }' />
+      </column>
+      <column caption='Seller Order Count' datatype='integer' name='[Calculation_801640765304336397]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='{ FIXED [seller_id] : COUNTD([order_id]) }' />
+      </column>
+      <column caption='Seller Late Rate' datatype='real' name='[Calculation_801640765304725518]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='SUM([Calculation_801640765304225804]) / SUM([Calculation_801640765304336397])' />
+      </column>
+      <column caption='Seller Rank' datatype='integer' name='[Calculation_801640765307944975]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='INDEX()'>
+          <table-calc ordering-type='Rows' />
+        </calculation>
       </column>
       <column caption='OTDR Order-Level' datatype='real' default-format='p0.00%' name='[OTDR (copy)_801640765297299463]' role='measure' type='quantitative'>
         <calculation class='tableau' formula='1 - SUM(INT([is_late])) / COUNT([order_id])' />
@@ -3280,8 +3307,11 @@
       <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
       <column-instance column='[OTDR Status (copy)_801640765291048966]' derivation='User' name='[usr:OTDR Status (copy)_801640765291048966:nk]' pivot='key' type='nominal' />
       <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='true' object-id='' units='records'>
-        <connection access_mode='readonly' authentication='auth-none' author-locale='en_US' class='hyper' dbname='C:/Users/User/AppData/Local/Temp/TableauTemp/#TableauTemp_1wemyxz00b4rgc1btln3p1c5rt95.hyper' default-settings='yes' schema='Extract' sslmode='' update-time='' username='tableau_internal_user'>
+        <connection access_mode='readonly' authentication='auth-none' author-locale='en_US' class='hyper' dbname='C:/Users/User/AppData/Local/Temp/TableauTemp/#TableauTemp_1wemyxz00b4rgc1btln3p1c5rt95.hyper' default-settings='yes' schema='Extract' sslmode='' update-time='07/15/2025 03:43:14 AM' username='tableau_internal_user'>
           <relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <refresh>
+            <refresh-event add-from-file-path='master_olist_dataset_with_features' increment-value='%null%' refresh-type='create' rows-inserted='115093' timestamp-start='2025-07-15 03:42:41.468' />
+          </refresh>
           <metadata-records>
             <metadata-record class='column'>
               <remote-name>order_id</remote-name>
@@ -4173,6 +4203,9 @@
         <field-sort-custom-order field='seller_state' />
         <field-sort-custom-order field='Calculation_801640765283844099' />
         <field-sort-custom-order field='OTDR Status (copy)_801640765291048966' />
+        <field-sort-custom-order field='Calculation_801640765304225804' />
+        <field-sort-custom-order field='Calculation_801640765304336397' />
+        <field-sort-custom-order field='Calculation_801640765304725518' />
         <field-sort-custom-order field='payment_sequential' />
         <field-sort-custom-order field='payment_type' />
         <field-sort-custom-order field='payment_installments' />
@@ -4188,10 +4221,12 @@
         <field-sort-custom-order field='is_late' />
         <field-sort-custom-order field='late_days' />
         <field-sort-custom-order field='Calculation_801640765285408773' />
+        <field-sort-custom-order field='Calculation_801640765301399563' />
         <field-sort-custom-order field='dispatch_delay' />
         <field-sort-custom-order field='is_late_dispatch' />
         <field-sort-custom-order field='dispatch_time' />
         <field-sort-custom-order field='Calculation_801640765285101572' />
+        <field-sort-custom-order field='Calculation_801640765299736586' />
         <field-sort-custom-order field='transit_time' />
         <field-sort-custom-order field='review_bucket' />
         <field-sort-custom-order field='order_rank' />
@@ -4212,8 +4247,9 @@
         <field-sort-custom-order field='Multiple Values' />
       </field-sort-info>
       <datasource-dependencies datasource='Parameters'>
-        <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
-          <calculation class='tableau' formula='95.' />
+        <column caption='Target OTDR' datatype='real' default-format='p0%' name='[Parameter 1]' param-domain-type='range' role='measure' type='quantitative' value='0.94999999999999996'>
+          <calculation class='tableau' formula='0.94999999999999996' />
+          <range granularity='0.01' max='1.0' min='0.95' />
         </column>
       </datasource-dependencies>
       <object-graph>
@@ -4298,19 +4334,23 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
-              <calculation class='tableau' formula='95.' />
+            <column caption='Target OTDR' datatype='real' default-format='p0%' name='[Parameter 1]' param-domain-type='range' role='measure' type='quantitative' value='0.94999999999999996'>
+              <calculation class='tableau' formula='0.94999999999999996' />
+              <range granularity='0.01' max='1.0' min='0.95' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
-            <column caption='Latest Year' datatype='integer' name='[Calculation_801640765285101572]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='{ FIXED : MAX( DATEPART(&apos;year&apos;, [order_delivered_customer_date]) ) }' />
-            </column>
-            <column caption='OTDR Latest Year' datatype='real' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='1 - &#13;&#10;( &#13;&#10;   SUM( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN INT([Calculation_801640765297446920])&#13;&#10;         END )&#13;&#10;   /&#13;&#10;   COUNTD( IF DATEPART(&apos;year&apos;, [order_delivered_customer_date]) = [Calculation_801640765285101572]&#13;&#10;         THEN [order_id]&#13;&#10;         END )&#13;&#10;)' />
+            <column caption='OTDR Latest Year' datatype='real' default-format='p0.00%' name='[Calculation_801640765285408773]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='1 -&#13;&#10;(&#13;&#10;    SUM(&#13;&#10;        IF [Calculation_801640765299736586] = 2018 THEN [Calculation_801640765297446920] END&#13;&#10;    )&#13;&#10;    /&#13;&#10;    SUM(&#13;&#10;        IF [Calculation_801640765299736586] = 2018 THEN 1 END&#13;&#10;    )&#13;&#10;)' />
             </column>
             <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
               <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
+            </column>
+            <column caption='Order Delivered Year' datatype='integer' name='[Calculation_801640765299736586]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [order_id] : MAX(DATEPART(&apos;year&apos;, [order_delivered_customer_date])) }' />
+            </column>
+            <column caption='Gap to Target OTDR' datatype='real' default-format='p0.00%' name='[Calculation_801640765301399563]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='([Parameters].[Parameter 1] - [Calculation_801640765285408773])' />
             </column>
             <column caption='OTDR Status Latest Year' datatype='string' name='[OTDR Status (copy)_801640765291048966]' role='measure' type='nominal'>
               <calculation class='tableau' formula='IF [Calculation_801640765285408773] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
@@ -4319,6 +4359,7 @@
             <column datatype='datetime' name='[order_delivered_customer_date]' role='dimension' type='ordinal' />
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
             <column-instance column='[Calculation_801640765285408773]' derivation='User' name='[usr:Calculation_801640765285408773:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_801640765301399563]' derivation='User' name='[usr:Calculation_801640765301399563:qk]' pivot='key' type='quantitative' />
             <column-instance column='[OTDR Status (copy)_801640765291048966]' derivation='User' name='[usr:OTDR Status (copy)_801640765291048966:nk]' pivot='key' type='nominal' />
           </datasource-dependencies>
           <aggregation value='true' />
@@ -4333,12 +4374,19 @@
             <encodings>
               <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:OTDR Status (copy)_801640765291048966:nk]' />
               <text column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765285408773:qk]' />
+              <text column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765301399563:qk]' />
+              <text column='[Parameters].[Parameter 1]' />
             </encodings>
             <customized-label>
               <formatted-text>
                 <run bold='true' fontsize='26'><![CDATA[<[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765285408773:qk]>]]></run>
                 <run>Æ&#10;</run>
-                <run bold='true' fontsize='12'>On-time Delivery Rate</run>
+                <run bold='true' fontsize='12'>2018 On-time Delivery Rate</run>
+                <run>Æ&#10;&#10;</run>
+                <run bold='true' fontsize='12'><![CDATA[Target: <[Parameters].[Parameter 1]>]]></run>
+                <run>Æ&#10;</run>
+                <run bold='true' fontsize='12'><![CDATA[Gap to Target: <[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765301399563:qk]>]]></run>
+                <run>Æ&#10;</run>
               </formatted-text>
             </customized-label>
             <style>
@@ -4365,8 +4413,9 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='Parameters'>
-            <column caption='Target OTDR' datatype='real' default-format='p0.00%' name='[Parameter 1]' param-domain-type='any' role='measure' type='quantitative' value='95.'>
-              <calculation class='tableau' formula='95.' />
+            <column caption='Target OTDR' datatype='real' default-format='p0%' name='[Parameter 1]' param-domain-type='range' role='measure' type='quantitative' value='0.94999999999999996'>
+              <calculation class='tableau' formula='0.94999999999999996' />
+              <range granularity='0.01' max='1.0' min='0.95' />
             </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
@@ -4429,7 +4478,7 @@
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_bucket]' derivation='Count' name='[cnt:review_bucket:qk]' pivot='key' type='quantitative' />
             <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
-            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='ordinal' />
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
             <column-instance column='[review_bucket]' derivation='None' name='[none:review_bucket:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[review_bucket]' role='dimension' type='nominal' />
           </datasource-dependencies>
@@ -4443,12 +4492,12 @@
             </view>
             <mark class='Automatic' />
             <encodings>
-              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:nk]' />
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' />
             </encodings>
           </pane>
         </panes>
         <rows>[federated.1l2esje0nn8iim16vonew1grfysj].[cnt:review_bucket:qk]</rows>
-        <cols>([federated.1l2esje0nn8iim16vonew1grfysj].[none:review_bucket:nk] / [federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:nk])</cols>
+        <cols>([federated.1l2esje0nn8iim16vonew1grfysj].[none:review_bucket:nk] / [federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok])</cols>
       </table>
       <simple-id uuid='{9FE03616-A458-4E29-8CF0-E96960B2AD6A}' />
     </worksheet>
@@ -4461,7 +4510,7 @@
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_score]' derivation='Count' name='[cnt:review_score:qk]' pivot='key' type='quantitative' />
             <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
-            <column-instance column='[is_late]' derivation='None' name='[none:is_late:nk]' pivot='key' type='ordinal' />
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
             <column-instance column='[review_score]' derivation='None' name='[none:review_score:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[review_score]' role='dimension' type='nominal' />
           </datasource-dependencies>
@@ -4484,18 +4533,85 @@
             </view>
             <mark class='Automatic' />
             <encodings>
-              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:nk]' />
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' />
             </encodings>
           </pane>
         </panes>
         <rows>[federated.1l2esje0nn8iim16vonew1grfysj].[cnt:review_score:qk]</rows>
-        <cols>([federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk] / [federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:nk])</cols>
+        <cols>([federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk] / [federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok])</cols>
       </table>
       <simple-id uuid='{82990495-FC69-4FA9-9302-94F707FB0C67}' />
     </worksheet>
+    <worksheet name='Top 20 Seller Late Rate'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='master_olist_dataset_with_features' name='federated.1l2esje0nn8iim16vonew1grfysj' />
+          </datasources>
+          <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
+            <column caption='Seller Is Late Order-level' datatype='integer' name='[Calculation_801640765304225804]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [seller_id], [order_id] : MAX( INT([is_late_dispatch]) ) }' />
+            </column>
+            <column caption='Seller Order Count' datatype='integer' name='[Calculation_801640765304336397]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [seller_id] : COUNTD([order_id]) }' />
+            </column>
+            <column caption='Seller Late Rate' datatype='real' name='[Calculation_801640765304725518]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([Calculation_801640765304225804]) / SUM([Calculation_801640765304336397])' />
+            </column>
+            <column caption='Seller Rank' datatype='integer' name='[Calculation_801640765307944975]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='INDEX()'>
+                <table-calc ordering-type='Rows' />
+              </calculation>
+            </column>
+            <column datatype='boolean' name='[is_late_dispatch]' role='dimension' type='nominal' />
+            <column-instance column='[Calculation_801640765304336397]' derivation='None' name='[none:Calculation_801640765304336397:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[seller_id]' derivation='None' name='[none:seller_id:nk]' pivot='key' type='nominal' />
+            <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
+            <column datatype='string' name='[seller_id]' role='dimension' type='nominal' />
+            <column-instance column='[Calculation_801640765304725518]' derivation='User' name='[usr:Calculation_801640765304725518:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_801640765307944975]' derivation='User' name='[usr:Calculation_801640765307944975:qk]' pivot='key' type='quantitative'>
+              <table-calc ordering-type='Columns' />
+            </column-instance>
+          </datasource-dependencies>
+          <filter class='quantitative' column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:Calculation_801640765304336397:qk]' included-values='in-range'>
+            <min>10</min>
+          </filter>
+          <filter class='quantitative' column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765307944975:qk]' included-values='in-range'>
+            <max>20</max>
+          </filter>
+          <shelf-sorts>
+            <shelf-sort-v2 dimension-to-sort='[federated.1l2esje0nn8iim16vonew1grfysj].[none:seller_id:nk]' direction='DESC' is-on-innermost-dimension='true' measure-to-sort-by='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765304725518:qk]' shelf='rows' />
+          </shelf-sorts>
+          <slices>
+            <column>[federated.1l2esje0nn8iim16vonew1grfysj].[none:Calculation_801640765304336397:qk]</column>
+            <column>[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765307944975:qk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='mark'>
+            <encoding attr='color' field='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765304725518:qk]' palette='red_10_0' type='interpolated' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765304725518:qk]' />
+            </encodings>
+          </pane>
+        </panes>
+        <rows>[federated.1l2esje0nn8iim16vonew1grfysj].[none:seller_id:nk]</rows>
+        <cols>[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765304725518:qk]</cols>
+      </table>
+      <simple-id uuid='{A783715D-C68B-4350-AEEA-CFA3D582E038}' />
+    </worksheet>
   </worksheets>
   <windows saved-dpi-scale-factor='1.5' source-height='75'>
-    <window class='worksheet' name='Review Score by Late'>
+    <window class='worksheet' maximized='true' name='Review Score by Late'>
       <cards>
         <edge name='left'>
           <strip size='160'>
@@ -4579,7 +4695,7 @@
       </cards>
       <simple-id uuid='{EEDD530C-DCE9-4778-9221-F46D88FC7477}' />
     </window>
-    <window class='worksheet' maximized='true' name='2018 OTD Rate'>
+    <window class='worksheet' name='2018 OTD Rate'>
       <cards>
         <edge name='left'>
           <strip size='160'>
@@ -4602,10 +4718,40 @@
         <edge name='right'>
           <strip size='160'>
             <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:OTDR Status (copy)_801640765291048966:nk]' type='color' />
+            <card mode='slider' param='[Parameters].[Parameter 1]' type='parameter' />
           </strip>
         </edge>
       </cards>
       <simple-id uuid='{91407A37-6895-47A6-9C3C-E83F835453B6}' />
+    </window>
+    <window class='worksheet' name='Top 20 Seller Late Rate'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='30'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card param='[federated.1l2esje0nn8iim16vonew1grfysj].[none:Calculation_801640765304336397:qk]' show-domain='false' show-null-ctrls='false' type='filter' />
+            <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_801640765304725518:qk]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <simple-id uuid='{2F73AB9F-6A80-47E0-914E-4853652CC1E4}' />
     </window>
   </windows>
 </workbook>
