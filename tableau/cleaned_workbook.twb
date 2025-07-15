@@ -13,6 +13,7 @@
     <ObjectModelTableType />
     <SchemaViewerObjectModel />
     <SheetIdentifierTracking />
+    <SortTagCleanup />
     <_.fcp.VConnDownstreamExtractsWithWarnings.true...VConnDownstreamExtractsWithWarnings />
     <WindowsPersistSimpleIdentifiers />
   </document-format-change-manifest>
@@ -3310,11 +3311,18 @@
       <column datatype='string' name='[customer_city]' role='dimension' semantic-role='[City].[Name]' type='nominal' />
       <column datatype='string' name='[customer_state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
       <column aggregation='Sum' datatype='integer' default-format='*00000' name='[customer_zip_code_prefix]' role='dimension' semantic-role='[ZipCode].[Name]' type='ordinal' />
-      <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+      <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+        <aliases>
+          <alias key='0' value='On-time' />
+          <alias key='1' value='Late' />
+        </aliases>
+      </column>
       <column datatype='integer' datatype-customized='true' name='[review_score]' role='dimension' type='ordinal' />
       <column datatype='string' name='[seller_city]' role='dimension' semantic-role='[City].[Name]' type='nominal' />
       <column datatype='string' name='[seller_state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
       <column datatype='string' name='[seller_zip_code_prefix]' role='dimension' semantic-role='[ZipCode].[Name]' type='nominal' />
+      <column-instance column='[Forecast Indicator]' derivation='None' forecast-column-base='[Forecast Indicator]' forecast-column-type='forecast-indicator' name='[none:Forecast Indicator:nk]' pivot='key' type='nominal' />
+      <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
       <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
       <column-instance column='[OTDR Status (copy)_801640765291048966]' derivation='User' name='[usr:OTDR Status (copy)_801640765291048966:nk]' pivot='key' type='nominal' />
       <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='true' object-id='' units='records'>
@@ -4177,12 +4185,28 @@
               <bucket>&quot;Below&quot;</bucket>
             </map>
           </encoding>
+          <encoding attr='color' field='[none:is_late:ok]' type='palette'>
+            <map to='#59a14f'>
+              <bucket>0</bucket>
+            </map>
+            <map to='#e15759'>
+              <bucket>1</bucket>
+            </map>
+          </encoding>
         </style-rule>
       </style>
       <semantic-values>
         <semantic-value key='[Country].[Name]' value='&quot;Brazil&quot;' />
         <semantic-value key='[State].[Name]' value='%null%' />
       </semantic-values>
+      <default-sorts>
+        <manual-sort column='[none:Forecast Indicator:nk]' direction='ASC'>
+          <dictionary>
+            <bucket>&quot;Actual&quot;</bucket>
+            <bucket>&quot;Estimate&quot;</bucket>
+          </dictionary>
+        </manual-sort>
+      </default-sorts>
       <field-sort-info field-sort-order-type='custom-order'>
         <field-sort-custom-order field='order_id' />
         <field-sort-custom-order field='customer_id' />
@@ -4373,7 +4397,12 @@
             <column caption='OTDR Status Latest Year' datatype='string' name='[OTDR Status (copy)_801640765291048966]' role='measure' type='nominal'>
               <calculation class='tableau' formula='IF [Calculation_801640765285408773] &lt; [Parameters].[Parameter 1] THEN &apos;Below&apos; ELSE &apos;Above&apos; END' />
             </column>
-            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
             <column datatype='datetime' name='[order_delivered_customer_date]' role='dimension' type='ordinal' />
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
             <column-instance column='[Calculation_801640765285408773]' derivation='User' name='[usr:Calculation_801640765285408773:qk]' pivot='key' type='quantitative' />
@@ -4498,7 +4527,12 @@
             <column caption='Is Late Order-level' datatype='integer' name='[Calculation_801640765297446920]' role='measure' type='quantitative'>
               <calculation class='tableau' formula='{ FIXED [order_id] : MAX( INT([is_late]) ) }' />
             </column>
-            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
             <column-instance column='[Calculation_801640765279150080]' derivation='User' name='[usr:Calculation_801640765279150080:qk]' pivot='key' type='quantitative' />
             <column-instance column='[Calculation_801640765283844099]' derivation='User' name='[usr:Calculation_801640765283844099:nk]' pivot='key' type='nominal' />
@@ -4547,7 +4581,12 @@
           </datasources>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_bucket]' derivation='Count' name='[cnt:review_bucket:qk]' pivot='key' type='quantitative' />
-            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
             <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
             <column-instance column='[review_bucket]' derivation='None' name='[none:review_bucket:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[review_bucket]' role='dimension' type='nominal' />
@@ -4571,6 +4610,118 @@
       </table>
       <simple-id uuid='{9FE03616-A458-4E29-8CF0-E96960B2AD6A}' />
     </worksheet>
+    <worksheet name='Review Late vs On-time Bar Chart'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='master_olist_dataset_with_features' name='federated.1l2esje0nn8iim16vonew1grfysj' />
+          </datasources>
+          <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
+            <column caption='Is Bad Review Order-level' datatype='integer' name='[Calculation_221802313291812864]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='{ FIXED [order_id] : MAX(&#13;&#10;    IF [review_score] &lt;= 3 THEN 1 ELSE 0 END&#13;&#10;) }' />
+            </column>
+            <column caption='Bad Review Share' datatype='real' default-format='p0.00%' name='[Calculation_221802313292066817]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([Calculation_221802313291812864]) / COUNTD([order_id])' />
+            </column>
+            <column-instance column='[review_score]' derivation='Avg' name='[avg:review_score:qk]' pivot='key' type='quantitative' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[review_score]' derivation='None' name='[none:review_score:nk]' pivot='key' type='ordinal' />
+            <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
+            <column datatype='integer' datatype-customized='true' name='[review_score]' role='dimension' type='ordinal' />
+            <column-instance column='[Calculation_221802313292066817]' derivation='User' name='[usr:Calculation_221802313292066817:qk]' pivot='key' type='quantitative' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]'>
+            <groupfilter function='except' user:ui-domain='relevant' user:ui-enumeration='exclusive' user:ui-marker='enumerate'>
+              <groupfilter function='level-members' level='[none:review_score:nk]' />
+              <groupfilter function='member' level='[none:review_score:nk]' member='%null%' />
+            </groupfilter>
+          </filter>
+          <slices>
+            <column>[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style />
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' />
+              <tooltip column='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_221802313292066817:qk]' />
+              <text column='[federated.1l2esje0nn8iim16vonew1grfysj].[avg:review_score:qk]' />
+            </encodings>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>[federated.1l2esje0nn8iim16vonew1grfysj].[avg:review_score:qk]</rows>
+        <cols>[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]</cols>
+      </table>
+      <simple-id uuid='{39DA454C-A9F0-4402-BC8E-1D2DC3CBA037}' />
+    </worksheet>
+    <worksheet name='Review Late vs On-time Bar Chart (2)'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='master_olist_dataset_with_features' name='federated.1l2esje0nn8iim16vonew1grfysj' />
+          </datasources>
+          <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
+            <column-instance column='[review_score]' derivation='Count' name='[cnt:review_score:qk]' pivot='key' type='quantitative' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
+            <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[review_score]' derivation='None' name='[none:review_score:nk]' pivot='key' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[review_score]' role='dimension' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]'>
+            <groupfilter function='level-members' level='[none:is_late:ok]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]'>
+            <groupfilter function='except' user:ui-domain='relevant' user:ui-enumeration='exclusive' user:ui-marker='enumerate'>
+              <groupfilter function='level-members' level='[none:review_score:nk]' />
+              <groupfilter function='member' level='[none:review_score:nk]' member='%null%' />
+            </groupfilter>
+          </filter>
+          <slices>
+            <column>[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]</column>
+            <column>[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style />
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' />
+            </encodings>
+          </pane>
+        </panes>
+        <rows>[federated.1l2esje0nn8iim16vonew1grfysj].[cnt:review_score:qk]</rows>
+        <cols>[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]</cols>
+      </table>
+      <simple-id uuid='{35785511-686B-4E5C-818D-A796021D4A4A}' />
+    </worksheet>
     <worksheet name='Review Score by Late'>
       <table>
         <view>
@@ -4579,7 +4730,12 @@
           </datasources>
           <datasource-dependencies datasource='federated.1l2esje0nn8iim16vonew1grfysj'>
             <column-instance column='[review_score]' derivation='Count' name='[cnt:review_score:qk]' pivot='key' type='quantitative' />
-            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
             <column-instance column='[is_late]' derivation='None' name='[none:is_late:ok]' pivot='key' type='ordinal' />
             <column-instance column='[review_score]' derivation='None' name='[none:review_score:nk]' pivot='key' type='ordinal' />
             <column datatype='integer' datatype-customized='true' name='[review_score]' role='dimension' type='ordinal' />
@@ -4630,7 +4786,12 @@
             </column>
             <column-instance column='[order_id]' derivation='CountD' name='[ctd:order_id:qk]' pivot='key' type='quantitative' />
             <column datatype='string' name='[customer_state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
-            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal' />
+            <column datatype='integer' datatype-customized='true' name='[is_late]' role='dimension' type='ordinal'>
+              <aliases>
+                <alias key='0' value='On-time' />
+                <alias key='1' value='Late' />
+              </aliases>
+            </column>
             <column-instance column='[customer_state]' derivation='None' name='[none:customer_state:nk]' pivot='key' type='nominal' />
             <column datatype='string' name='[order_id]' role='dimension' type='nominal' />
             <column-instance column='[Calculation_221802313295003650]' derivation='User' name='[usr:Calculation_221802313295003650:qk]' pivot='key' type='quantitative' />
@@ -4676,8 +4837,11 @@
             </customized-tooltip>
             <style>
               <style-rule element='mark'>
+                <format attr='mark-labels-range-field' value='[federated.1l2esje0nn8iim16vonew1grfysj].[usr:Calculation_221802313295003650:qk]' />
+                <format attr='mark-labels-range-scope' value='pane' />
+                <format attr='mark-labels-mode' value='all' />
+                <format attr='mark-labels-cull' value='false' />
                 <format attr='mark-labels-show' value='true' />
-                <format attr='mark-labels-cull' value='true' />
               </style-rule>
             </style>
           </pane>
@@ -4911,7 +5075,7 @@
       </cards>
       <simple-id uuid='{29F4328D-1330-4CE4-A5D5-0DC6DCB7E020}' />
     </window>
-    <window class='worksheet' maximized='true' name='State Late Heat Map'>
+    <window class='worksheet' name='State Late Heat Map'>
       <cards>
         <edge name='left'>
           <strip size='160'>
@@ -4947,6 +5111,79 @@
         <default-map-tool-selection tool='1' />
       </viewpoint>
       <simple-id uuid='{3AD786CD-E264-439E-9038-6F81BC646313}' />
+    </window>
+    <window class='worksheet' name='Review Late vs On-time Bar Chart'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='30'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]</field>
+            <field>[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{D009FC86-9E63-4572-8F5E-D4D295A41880}' />
+    </window>
+    <window class='worksheet' maximized='true' name='Review Late vs On-time Bar Chart (2)'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='30'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card param='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' type='filter' />
+            <card pane-specification-id='0' param='[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1l2esje0nn8iim16vonew1grfysj].[none:is_late:ok]</field>
+            <field>[federated.1l2esje0nn8iim16vonew1grfysj].[none:review_score:nk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{3E5822FF-DB8F-431B-8F79-C6403A734D03}' />
     </window>
   </windows>
   <thumbnails>
@@ -5713,6 +5950,232 @@
       iok7Hn2K2z7bxP/+7+/JmP8od0xKOfO2rCXCNAROKwThCgW9t2p0BiKTcvnSY99HY4jE57Hj
       V3VExUZjEt0iCsNMiJdBtVi0Hl7+w7OU1TbjVY2kFRTz0CMPkRdrEAPVCcPG/wflo2E63l1U
       iAAAAABJRU5ErkJggg==
+    </thumbnail>
+    <thumbnail height='192' name='Review Late vs On-time Bar Chart' width='192'>
+      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
+    </thumbnail>
+    <thumbnail height='192' name='Review Late vs On-time Bar Chart (2)' width='192'>
+      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
+      AAAASUVORK5CYII=
     </thumbnail>
     <thumbnail height='192' name='Review Score by Late' width='192'>
       iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAABYlAAAWJQFJUiTw
