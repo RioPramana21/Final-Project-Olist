@@ -193,12 +193,20 @@ pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
 
 models = {
     "Dummy":         (DummyClassifier(strategy="most_frequent"), preprocess_passthrough),
-    "LogReg":        (LogisticRegression(max_iter=200, class_weight="balanced", solver="lbfgs", random_state=RANDOM_STATE), preprocess_ohe),
+    "LogReg":        (LogisticRegression(max_iter=300, class_weight="balanced", solver="lbfgs", random_state=RANDOM_STATE), preprocess_ohe),
     "DecisionTree":  (DecisionTreeClassifier(max_depth=None, min_samples_leaf=10, class_weight="balanced", random_state=RANDOM_STATE), preprocess_ohe),
-    "RandomForest":  (RandomForestClassifier(n_estimators=200, max_depth=None, class_weight="balanced", n_jobs=-1, random_state=RANDOM_STATE), preprocess_ohe),
-    # "XGBoost":       (XGBClassifier(n_estimators=200, learning_rate=0.1, scale_pos_weight=pos_weight, eval_metric='logloss', n_jobs=-1, random_state=RANDOM_STATE, verbosity=0), preprocess_ohe),
-    "LightGBM":      (LGBMClassifier(n_estimators=200, learning_rate=0.1, class_weight="balanced", random_state=RANDOM_STATE, n_jobs=-1), preprocess_ohe),
-    "CatBoost":      (CatBoostClassifier(iterations=200, learning_rate=0.1, depth=6, random_state=RANDOM_STATE, verbose=0, cat_features=cat_cols, allow_writing_files=False), preprocess_passthrough)
+    "RandomForest":  (RandomForestClassifier(n_estimators=300, max_depth=None, class_weight="balanced", n_jobs=-1, random_state=RANDOM_STATE), preprocess_ohe),
+    "XGBoost":      (XGBClassifier(
+                        n_estimators=300,
+                        learning_rate=0.1,
+                        scale_pos_weight=pos_weight,
+                        use_label_encoder=False,         
+                        eval_metric='logloss',
+                        n_jobs=-1,
+                        random_state=RANDOM_STATE
+                     ),     preprocess_ohe),
+    "LightGBM":      (LGBMClassifier(n_estimators=300, learning_rate=0.1, class_weight="balanced", random_state=RANDOM_STATE, n_jobs=-1), preprocess_ohe),
+    "CatBoost":      (CatBoostClassifier(iterations=300, learning_rate=0.1, depth=6, random_state=RANDOM_STATE, verbose=0, cat_features=cat_cols, allow_writing_files=False), preprocess_passthrough)
 }
 
 # Create a proper stratified k-fold cross-validation
@@ -256,7 +264,7 @@ from sklearn.metrics import (
 rf_pipe = Pipeline([
     ("preprocess", preprocess_ohe),
     ("model", RandomForestClassifier(
-        n_estimators=200,
+        n_estimators=300,
         max_depth=None,
         class_weight="balanced",
         n_jobs=-1,
@@ -287,20 +295,38 @@ print("\nConfusion matrix:")
 display(cm)
 
 # --- threshold to reach ≥80 % precision on "Late" ------------------
-prec, rec, thr = precision_recall_curve(y_test, y_prob)
-try:
-    idx = np.where(prec >= 0.80)[0][0]
-    best_thr = thr[idx]
-    print(f"\nThreshold for ≥80 % precision: {best_thr:.3f}")
-    print(f"  resulting recall          : {rec[idx]:.3f}")
-except IndexError:
-    print("\nModel never reaches 80 % precision; highest achieved:")
-    print(f"  max precision: {prec.max():.3f} at recall {rec[prec.argmax()]:.3f}")
+precisions, recalls, thresholds = precision_recall_curve(y_test, y_prob)
+target_recall = 0.85
+# find the first threshold at which recall ≥ target_recall
+idx = np.where(recalls >= target_recall)[0]
+if idx.size:
+    best_thr = thresholds[idx[0]]
+    print(f"Threshold for ≥{target_recall*100:.0f}% recall: {best_thr:.3f}")
+    print(f"  resulting precision     : {precisions[idx[0]]:.3f}")
+else:
+    # fallback if model never reaches that recall
+    max_rec = recalls.max()
+    prec_at_max = precisions[recalls.argmax()]
+    print(f"Model never reaches {target_recall*100:.0f}% recall; "
+          f"highest recall {max_rec:.3f} at precision {prec_at_max:.3f}")
+
+# build predictions at your chosen threshold
+y_pred_recall = (y_prob >= best_thr).astype(int)
+
+print("\nClassification report at recall-optimized threshold:")
+print(classification_report(y_test, y_pred_recall, digits=3))
+
+# and a confusion matrix
+cm = confusion_matrix(y_test, y_pred_recall)
+display(pd.DataFrame(
+    cm,
+    index=["Actual On-time","Actual Late"],
+    columns=["Pred On-time","Pred Late"]
+))
+
 
 # quick PR-curve
 PrecisionRecallDisplay.from_predictions(y_test, y_prob)
 plt.title("RandomForest – Precision-Recall Curve")
 plt.show()
-
-print(319/1423 * 100)
 
