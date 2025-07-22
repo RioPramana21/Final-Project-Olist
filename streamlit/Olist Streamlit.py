@@ -347,14 +347,29 @@ def disclaimer():
     st.markdown("### Model Limitations")
 
     st.markdown("""
-    > - **No Real-Time Factors**  
-    The model doesn't account for real-time issues like traffic, weather, or sudden carrier strikes.
+    > **Data Quality and Availability**  
+    - Missing or incorrect data could reduce the reliability of the machine learning model.  
+    - Other predictors, such as real-time logistics data (provider name, weather, traffic, infrastructure, courier delay), that are not available can limit the predictive power.
 
-    > - **Historical Bias**  
-    Predictions are based on past behaviour. New sellers or recent policy changes may not be reflected accurately.
+    > **Confusion Matrix and Performance Limitations**
+    >  
+    **Key Insights:**
+    >
+    - **False Negatives:**  
+        - The model fails to alert on genuine late deliveries.  
+        - Customers remain dissatisfied, resulting in complaints and lower retention.
+    > 
+    - **False Positives:**  
+        - Waste of resources on unnecessary interventions.  
+        - Potentially alienates sellers or logistics partners by imposing undue pressure.
 
-    > - **Ethical Use**  
-    Model outputs should support human decision-making, not replace it. Use results to inform strategy, not penalise sellers directly without review.
+    > **Temporal Drift and Model Staleness**  
+    - Customer behaviour, seller reliability, and logistics processes constantly evolve.  
+    - Without regular retraining and monitoring, the model's accuracy will degrade over time.
+
+    > **Ethical and Fairness Considerations**  
+    - Risk of bias against certain sellers or regions.  
+    - Sellers unfairly flagged as problematic might experience negative financial impacts or reduced sales, potentially damaging partnerships.
     """)
 
     st.markdown("### Final Note")
