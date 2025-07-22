@@ -89,7 +89,7 @@ with st.sidebar:
     st.markdown(
         """
         <div style='
-            margin-top: 25vh;
+            margin-top: 35vh;
             text-align: center;
             color: #FFFFFF;
             font-size: 14px;
@@ -130,11 +130,7 @@ def home():
     > **E-commerce is booming**, and timely delivery is more important than ever. In the competitive world of online retail, a late delivery doesn't just frustrate customers, it can also lead to churn, negative reviews, and costly refunds or vouchers.  
     >  
     > That's where **Olist in Motion** comes in. Instead of guessing which orders might be delayed, this app uses machine learning to analyse key order and shipping features to **predict late deliveries before they happen**. This empowers the operations team to take proactive steps like adjusting logistics or setting better customer expectations.  
-    >  
-    > **What you can do here:**  
-    > • View data-driven insights and performance metrics  
-    > • Upload your own order data for instant delivery risk predictions  
-    >  
+    >
     > **Ready to stay ahead of delays? Let's get moving with Olist in Motion!**
     """)
 
@@ -230,7 +226,6 @@ def predictor():
         seller_state = st.selectbox("Seller State", df['seller_state'].unique().tolist())
         payment_types = st.selectbox("Payment Type", df['payment_types'].unique().tolist())
 
-
     if st.button("Predict Late Delivery"):
         input_df = pd.DataFrame([{
             "purchase_to_approve_hrs": purchase_to_approve_hrs,
@@ -264,7 +259,25 @@ def predictor():
         }])
     
         prediction = model_pipeline.predict(input_df)[0]
-        st.success(f"Predicted Late Delivery: {'Yes' if prediction else 'No'}")
+        if prediction:
+            st.markdown("""
+                <div style="padding: 1rem; border: 2px solid red; border-radius: 10px; background-color: #ffe6e6;">
+                    <h3 style="color:red;">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Late Delivery Predicted
+                    </h3>
+                    <p style="color:red;">Try adjusting fulfillment or shipping strategy.</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+                <div style="padding: 1rem; border: 2px solid green; border-radius: 10px; background-color: #e6ffe6;">
+                    <h3 style="color:green;">
+                        <i class="bi bi-check-circle-fill"></i> On-Time Delivery Predicted
+                    </h3>
+                    <p style="color:green;">No delay expected. Proceed as usual.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
 
     # Batch predictions section:
     st.markdown("### Batch Predictions")
