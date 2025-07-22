@@ -344,19 +344,6 @@ def disclaimer():
     This model is built to **predict the risk of late deliveries** using a Random Forest Classifier trained on historical delivery and seller behaviour data.
     """)
 
-    st.markdown("### Operational Recommendations")
-
-    st.markdown("""
-    > - **Monitor High-Risk Sellers**  
-    Sellers with consistently high predicted late delivery probabilities should be reviewed and supported with training or stricter policies.
-
-    > - **Flexible SLA Targets**  
-    Adjust promised delivery dates for remote regions or product categories where delays are historically more common.
-
-    > - **Improve Carrier Handling**  
-    For categories prone to delays, assign preferred logistics partners or offer scheduled delivery options to reduce risk.
-    """)
-
     st.markdown("### Model Limitations")
 
     st.markdown("""
