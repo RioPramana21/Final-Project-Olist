@@ -59,7 +59,7 @@ def read_olist_csv(path):
     return pd.read_csv(path, parse_dates=parse_dates)
 
 # Load dataset:
-df = read_olist_csv('../data/cleaned_data/olist_ml_ready_dataset.csv')
+df = read_olist_csv('data/cleaned_data/olist_ml_ready_dataset.csv')
 
 # Split features and target:
 X = df.drop(columns=['is_late'])
@@ -69,7 +69,7 @@ y = df['is_late']
 X_train, y_train = X, y
 
 # Load pipeline:
-model_pipeline = joblib.load('best_rf_pipeline.pkl')
+model_pipeline = joblib.load('models/best_rf_pipeline.pkl')
 
 # Sidebar navigation for multipage:
 with st.sidebar:
