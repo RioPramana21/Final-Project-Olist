@@ -24,10 +24,9 @@ X = df.drop(columns=['is_late'])
 y = df['is_late']
 X_train, y_train = X, y
 
-# Load model:
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(BASE_DIR, 'models', 'best_rf_pipeline.pkl')
+    model_path = os.path.join(BASE_DIR, 'streamlit', 'best_rf_pipeline.pkl')
     return joblib.load(model_path)
 
 # Sidebar navigation for multipage:
