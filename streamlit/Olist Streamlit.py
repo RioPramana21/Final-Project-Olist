@@ -9,7 +9,7 @@ from streamlit_option_menu import option_menu
 from utils import read_olist_csv
 
 # Get the project root directory (1 level up from current script):
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.abspath(os.getcwd())
 
 # Load dataset:
 @st.cache_data
@@ -24,7 +24,7 @@ X = df.drop(columns=['is_late'])
 y = df['is_late']
 X_train, y_train = X, y
 
-# Load pipeline:
+# Load model:
 @st.cache_resource
 def load_model():
     model_path = os.path.join(BASE_DIR, 'models', 'best_rf_pipeline.pkl')
