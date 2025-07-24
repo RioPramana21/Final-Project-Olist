@@ -58,24 +58,27 @@ def read_olist_csv(path):
     # Read the CSV, parsing the specified date columns (if any):
     return pd.read_csv(path, parse_dates=parse_dates)
 
+# Get the directory of the current script:
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load dataset:
 @st.cache_data
 def load_data():
-    return read_olist_csv('../data/cleaned_data/olist_ml_ready_dataset.csv')
+    csv_path = os.path.join(SCRIPT_DIR, '..', 'data', 'cleaned_data', 'olist_ml_ready_dataset.csv')
+    return read_olist_csv(csv_path)
 
 df = load_data()
 
 # Split features and target:
 X = df.drop(columns=['is_late'])
 y = df['is_late']
-
-# Assign to X_train and y_train:
 X_train, y_train = X, y
 
 # Load pipeline:
 @st.cache_resource
 def load_model():
-    return joblib.load('../models/best_rf_pipeline.pkl')
+    model_path = os.path.join(SCRIPT_DIR, '..', 'models', 'best_rf_pipeline.pkl')
+    return joblib.load(model_path)
 
 # Sidebar navigation for multipage:
 with st.sidebar:
