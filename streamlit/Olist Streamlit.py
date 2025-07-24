@@ -59,7 +59,11 @@ def read_olist_csv(path):
     return pd.read_csv(path, parse_dates=parse_dates)
 
 # Load dataset:
-df = read_olist_csv('data/cleaned_data/olist_ml_ready_dataset.csv')
+@st.cache_data
+def load_data():
+    return read_olist_csv('../data/cleaned_data/olist_ml_ready_dataset.csv')
+
+df = load_data()
 
 # Split features and target:
 X = df.drop(columns=['is_late'])
@@ -69,7 +73,9 @@ y = df['is_late']
 X_train, y_train = X, y
 
 # Load pipeline:
-model_pipeline = joblib.load('models/best_rf_pipeline.pkl')
+@st.cache_resource
+def load_model():
+    return joblib.load('../models/best_rf_pipeline.pkl')
 
 # Sidebar navigation for multipage:
 with st.sidebar:
@@ -154,6 +160,10 @@ def predictor():
     st.markdown("""
     > Input delivery details manually or upload your own dataset for batch predictions.
     """)
+
+    # Load data and model with caching:
+    df = load_data()
+    model_pipeline = load_model()
 
     # Timeline Features:
     st.markdown("### Order Timeline")
