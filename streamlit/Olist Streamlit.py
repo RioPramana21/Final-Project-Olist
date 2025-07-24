@@ -6,65 +6,15 @@ import joblib
 import os
 import category_encoders as ce
 from streamlit_option_menu import option_menu
-
-# List of date columns for each Olist dataset:
-# This dictionary maps each dataset filename to a list of columns that should be parsed as dates.
-date_cols = {
-    'olist_orders_dataset.csv': [
-        'order_purchase_timestamp',
-        'order_approved_at',
-        'order_delivered_carrier_date',
-        'order_delivered_customer_date',
-        'order_estimated_delivery_date',
-    ],
-    'olist_order_items_dataset.csv': [
-        'shipping_limit_date',
-    ],
-    'olist_order_reviews_dataset.csv': [
-        'review_creation_date',
-        'review_answer_timestamp',
-    ],
-    # The following datasets have NO date columns:
-    # 'olist_customers_dataset.csv'
-    # 'olist_geolocation_dataset.csv'
-    # 'olist_order_payments_dataset.csv'
-    # 'olist_products_dataset.csv'
-    # 'olist_sellers_dataset.csv'
-    # 'product_category_name_translation.csv'
-    'master_olist_dataset.csv': [
-        'order_purchase_timestamp',
-        'order_approved_at',
-        'order_delivered_carrier_date',
-        'order_delivered_customer_date',
-        'order_estimated_delivery_date',
-        'shipping_limit_date',
-        'review_creation_date',
-        'review_answer_timestamp',
-    ],
-}
-
-def read_olist_csv(path):
-    """
-    Reads an Olist CSV and parses dates for the correct columns.
-    Args:
-        path (str): Path to the CSV file.
-    Returns:
-        pd.DataFrame: Loaded dataframe with date columns parsed as datetime.
-    """
-    # Extract just the filename, e.g., 'olist_orders_dataset.csv':
-    filename = os.path.basename(path)
-    # Get the correct date columns for this file, or an empty list:
-    parse_dates = date_cols.get(filename, [])
-    # Read the CSV, parsing the specified date columns (if any):
-    return pd.read_csv(path, parse_dates=parse_dates)
+from utils import read_olist_csv
 
 # Get the directory of the current script:
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.getcwd()
 
 # Load dataset:
 @st.cache_data
 def load_data():
-    csv_path = os.path.join(SCRIPT_DIR, '..', 'data', 'cleaned_data', 'olist_ml_ready_dataset.csv')
+    csv_path = os.path.join(BASE_DIR, 'data', 'cleaned_data', 'olist_ml_ready_dataset.csv')
     return read_olist_csv(csv_path)
 
 df = load_data()
@@ -77,7 +27,7 @@ X_train, y_train = X, y
 # Load pipeline:
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(SCRIPT_DIR, '..', 'models', 'best_rf_pipeline.pkl')
+    model_path = os.path.join(BASE_DIR, 'models', 'best_rf_pipeline.pkl')
     return joblib.load(model_path)
 
 # Sidebar navigation for multipage:
