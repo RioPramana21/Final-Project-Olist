@@ -8,8 +8,8 @@ import category_encoders as ce
 from streamlit_option_menu import option_menu
 from utils import read_olist_csv
 
-# Get the directory of the current script:
-BASE_DIR = os.getcwd()
+# Get the project root directory (1 level up from current script):
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Load dataset:
 @st.cache_data
