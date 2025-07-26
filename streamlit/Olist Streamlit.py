@@ -6,70 +6,28 @@ import joblib
 import os
 import category_encoders as ce
 from streamlit_option_menu import option_menu
+from utils import read_olist_csv
 
-# List of date columns for each Olist dataset:
-# This dictionary maps each dataset filename to a list of columns that should be parsed as dates.
-date_cols = {
-    'olist_orders_dataset.csv': [
-        'order_purchase_timestamp',
-        'order_approved_at',
-        'order_delivered_carrier_date',
-        'order_delivered_customer_date',
-        'order_estimated_delivery_date',
-    ],
-    'olist_order_items_dataset.csv': [
-        'shipping_limit_date',
-    ],
-    'olist_order_reviews_dataset.csv': [
-        'review_creation_date',
-        'review_answer_timestamp',
-    ],
-    # The following datasets have NO date columns:
-    # 'olist_customers_dataset.csv'
-    # 'olist_geolocation_dataset.csv'
-    # 'olist_order_payments_dataset.csv'
-    # 'olist_products_dataset.csv'
-    # 'olist_sellers_dataset.csv'
-    # 'product_category_name_translation.csv'
-    'master_olist_dataset.csv': [
-        'order_purchase_timestamp',
-        'order_approved_at',
-        'order_delivered_carrier_date',
-        'order_delivered_customer_date',
-        'order_estimated_delivery_date',
-        'shipping_limit_date',
-        'review_creation_date',
-        'review_answer_timestamp',
-    ],
-}
-
-def read_olist_csv(path):
-    """
-    Reads an Olist CSV and parses dates for the correct columns.
-    Args:
-        path (str): Path to the CSV file.
-    Returns:
-        pd.DataFrame: Loaded dataframe with date columns parsed as datetime.
-    """
-    # Extract just the filename, e.g., 'olist_orders_dataset.csv':
-    filename = os.path.basename(path)
-    # Get the correct date columns for this file, or an empty list:
-    parse_dates = date_cols.get(filename, [])
-    # Read the CSV, parsing the specified date columns (if any):
-    return pd.read_csv(path, parse_dates=parse_dates)
+# Get the project root directory (1 level up from current script):
+BASE_DIR = os.path.abspath(os.getcwd())
 
 # Load dataset:
-df = read_olist_csv('../data/cleaned_data/olist_ml_ready_dataset.csv')
+@st.cache_data
+def load_data():
+    csv_path = os.path.join(BASE_DIR, 'data', 'cleaned_data', 'olist_ml_ready_dataset.csv')
+    return read_olist_csv(csv_path)
+
+df = load_data()
 
 # Split features and target:
 X = df.drop(columns=['is_late'])
 y = df['is_late']
-
-# Assign to X_train and y_train:
 X_train, y_train = X, y
 
-# Load pipeline:
-model_pipeline = joblib.load('best_rf_pipeline.pkl')
+@st.cache_resource
+def load_model():
+    model_path = os.path.join(BASE_DIR, 'streamlit', 'best_rf_pipeline.pkl')
+    return joblib.load(model_path)
 
 # Sidebar navigation for multipage:
 with st.sidebar:
@@ -154,6 +112,10 @@ def predictor():
     st.markdown("""
     > Input delivery details manually or upload your own dataset for batch predictions.
     """)
+
+    # Load data and model with caching:
+    df = load_data()
+    model_pipeline = load_model()
 
     # Timeline Features:
     st.markdown("### Order Timeline")
@@ -347,14 +309,29 @@ def disclaimer():
     st.markdown("### Model Limitations")
 
     st.markdown("""
-    > - **No Real-Time Factors**  
-    The model doesn't account for real-time issues like traffic, weather, or sudden carrier strikes.
+    > **Data Quality and Availability**  
+    - Missing or incorrect data could reduce the reliability of the machine learning model.  
+    - Other predictors, such as real-time logistics data (provider name, weather, traffic, infrastructure, courier delay), that are not available can limit the predictive power.
 
-    > - **Historical Bias**  
-    Predictions are based on past behaviour. New sellers or recent policy changes may not be reflected accurately.
+    > **Confusion Matrix and Performance Limitations**
+    >  
+    **Key Insights:**
+    >
+    - **False Negatives:**  
+        - The model fails to alert on genuine late deliveries.  
+        - Customers remain dissatisfied, resulting in complaints and lower retention.
+    > 
+    - **False Positives:**  
+        - Waste of resources on unnecessary interventions.  
+        - Potentially alienates sellers or logistics partners by imposing undue pressure.
 
-    > - **Ethical Use**  
-    Model outputs should support human decision-making, not replace it. Use results to inform strategy, not penalise sellers directly without review.
+    > **Temporal Drift and Model Staleness**  
+    - Customer behaviour, seller reliability, and logistics processes constantly evolve.  
+    - Without regular retraining and monitoring, the model's accuracy will degrade over time.
+
+    > **Ethical and Fairness Considerations**  
+    - Risk of bias against certain sellers or regions.  
+    - Sellers unfairly flagged as problematic might experience negative financial impacts or reduced sales, potentially damaging partnerships.
     """)
 
     st.markdown("### Final Note")
